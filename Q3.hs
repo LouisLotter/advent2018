@@ -6,6 +6,7 @@ import Data.List.Split
 import Data.Maybe
 import Data.List
 
+
 genZone :: (String,Int,Int,Int,Int) -> (String,[(Int,Int)])
 genZone (idd,l,t,w,h) = (idd,concat $ [genTup l w i | i <- [t..(t+h-1)]])
   where
@@ -21,29 +22,17 @@ getSegments str = case splitOn " " str of
                            sa:sb:_  = splitOn "x" size
   _            ->  Nothing
 
-mFromAscList :: (String,[(Int,Int)]) -> (String,(IntMap.IntMap Int))
-mFromAscList (idd,lst) = (idd,IntMap.fromAscList lst)
-mFlatten lst = map flatt lst
-  where
-    flatt (_,mapp)= mapp
-
-mIntersection overlap (idd,mapp) = (idd,IntMap.intersection overlap mapp)
-mSize (idd,mapp) = (idd,IntMap.size mapp)
-
-mSizeIsZero (idd,sz) = sz == 0
+tupMap f (a,b) = (a,(f b))
+tupFlat (_, b) = b
+tupSize (_, b) = b == 0
 
 test = do
     f     <- readFile "input3.txt"
     let
-      listOfMapClaims = map (mFromAscList . genZone) $ catMaybes $ map getSegments $ lines f
-      overlapMap = IntMap.filter (> 1) $ IntMap.unionsWith (+) $ mFlatten listOfMapClaims
+      listOfMapClaims = map ((tupMap IntMap.fromAscList) . genZone) $ catMaybes $ map getSegments $ lines f
+      overlapMap = IntMap.filter (> 1) $ IntMap.unionsWith (+) $ map tupFlat listOfMapClaims
     putStrLn $ show $ IntMap.size $ overlapMap
-    putStrLn $ show $ filter mSizeIsZero $ map (mSize . (mIntersection overlapMap)) listOfMapClaims
---    let
---      listOfMapClaims = map (IntMap.fromAscList . genZone) $ catMaybes $ map getSegments $ lines f
---      overlapMap = IntMap.filter (> 1) $ IntMap.unionsWith (+) $ listOfMapClaims
---    putStrLn $ show $ IntMap.size $ overlapMap
---    putStrLn $ show $ filter (== 0) $ map (IntMap.size . (IntMap.intersection overlapMap)) listOfMapClaims
+    putStrLn $ show $ filter tupSize $ map (tupMap $ IntMap.size . (IntMap.intersection overlapMap)) listOfMapClaims
 
 
 
