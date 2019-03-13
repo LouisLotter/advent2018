@@ -31,7 +31,7 @@ reduce str = reduce' str 0
             newStr = react str
 
 permut :: String -> [String]
-permut str = map (remove str)['a'..'z']
+permut str = map (remove str) ['a'..'z']
   where
     remove str c = (filter (charNotEq c) str)
 
